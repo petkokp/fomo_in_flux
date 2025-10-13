@@ -107,12 +107,12 @@ experiment:
     # If set to >0, will overwrite default benchmark image sizes.
     img_size: -1
     # Number of kernels to use.
-    num_workers: 8
+    num_workers: 16
 
     # If set, will load as much of the data into memory before training. Depends on the exact dataset used.
     preload: False
     # If set, will only preload test/evaluation data. Will override preload.
-    preload_test_only: False
+    preload_test_only: True
     # If set, will resize the data and dump it into a separate folder within the dataset-root-folder.
     create_resized_variant_if_possible: True
 
@@ -704,3 +704,32 @@ continual:
     head_block_idcs: []
     kv_only: False
     tune_logit_scale: False
+
+  prompt:
+    prompt_length: 10
+    
+  tpt:
+    steps: 1          # Number of adaptation steps per test sample
+    selection_p: 0.1  # Percentage of confident augmentations to use for loss
+    tpt_lr: 0.001     # Learning rate for the prompt optimizer
+
+  vte:
+      selection_p: 0.1
+
+  abn:
+    alpha: 0.5  # The interpolation factor. 0.0=zero-shot, 1.0=test-time BN.
+
+  roid:
+    roid_lr: 0.00025          # Learning rate for normalization parameters
+    momentum_src: 0.99       # EMA momentum for resetting towards source model
+    momentum_probs: 0.9       # EMA momentum for tracking class probabilities
+    temperature: 0.333          # Temperature for sample weighting
+
+  tda:
+    pos_alpha: 1.0
+    pos_beta: 5.0
+    pos_capacity: 1
+    neg_alpha: 1.0
+    neg_beta: 5.0
+    neg_capacity: 1
+    neg_entropy_thresh: [0.5, 1.0] # Range of normalized entropy for negative samples
