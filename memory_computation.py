@@ -14,8 +14,7 @@ import utils.conf
 import utils.evaluation
 import utils.training
 import utils.sequence_handling
-import utils.evaluation_fix_sequence
-import utils.training_fix_sequence
+import utils.evaluation
 import numpy as np
 import subprocess
 
@@ -283,7 +282,7 @@ def main(args: DictConfig) -> None:
     with open_dict(args):
         args.log.log_folder = pathlib.Path(log_folder)
 
-    evaluator = utils.evaluation_fix_sequence.Evaluator(
+    evaluator = utils.evaluation.Evaluator(
         args,
         experiment,
         device,
