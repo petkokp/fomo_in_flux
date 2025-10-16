@@ -1,0 +1,641 @@
+# @package _global_
+
+# ACCURACY:
+
+# VTE:
+
+# python main.py   experiment=mini_eurosat.yaml   continual.method=vte   experiment.task.n_samples=0   experiment.backbone.name=openclip_vit_b32  log.folder=./experiment_results   log.name=mini_stl10_vte
+
+# TRAINING DATASETS
+# Dataset | accuracy | recall@1 | recall@5
+# eurosat | 43.037% | -------- | --------
+
+# EVAL ONLY DATASETS
+# Dataset | accuracy | recall@1 | recall@5
+# imagenet_r | 79.037% | -------- | --------
+
+# FINETUNE:
+
+# python main.py   experiment=mini_eurosat.yaml   continual.method=finetune experiment.backbone.freeze_head=False experiment.backbone.freeze_features=False  experiment.backbone.name=openclip_vit_b32  log.folder=./experiment_results   log.name=mini_stl10_finetune zeroshot_only=False
+
+# 1 TASK, 150K SAMPLES:
+
+# Evaluation On All Datasets:
+# Average Accuracy across [all | train | eval_only] datasets:
+# [ZS: 61.52] -> 82.77% | [ZS: 49.04] -> 97.46% | [ZS: 74.01] -> 68.08%
+
+# TRAINING DATASETS
+# Dataset | accuracy | recall@1 | recall@5
+# eurosat | 97.457% | -------- | --------
+
+# EVAL ONLY DATASETS
+# Dataset | accuracy | recall@1 | recall@5
+# imagenet_r | 68.083% | -------- | --------
+
+# 5 TASKS, 1024 SAMPLES:
+
+# TRAINING DATASETS
+# Dataset | accuracy | recall@1 | recall@5
+# eurosat | 49.037% | -------- | --------
+
+# EVAL ONLY DATASETS
+# Dataset | accuracy | recall@1 | recall@5
+# imagenet | 65.594% | -------- | --------
+# imagenet_a | 23.307% | -------- | --------
+# imagenet_d | 40.683% | -------- | --------
+# imagenet_r | 74.013% | -------- | --------
+# imagenet_s | 52.261% | -------- | --------
+# imagenet_v2 | 57.520% | -------- | --------
+
+# Beginning class-incremental data streaming.                                                                                                                                                                                      
+
+# Evaluation Current Task 1/5:
+# Covering 1 adaptation dataset(s).
+
+# Eurosat - Total Accuracy:
+# [ZS: 49.04%] -> 56.35%
+# Current Task Accuracy:
+# 67.33% | 40.18% | 73.78% | 84.97% | 17.64%
+# Avg. Task Accuracy Progression:
+# 67.33%
+# Current Task Task_masked_accuracy:
+# 99.61% | 92.18% | 99.41% | 95.45% | 72.79%
+# Avg. Task Task_masked_accuracy Progression:
+# 99.61%
+
+# Evaluation On All Datasets:
+# Average Accuracy across [all | train | eval_only] datasets:
+# [ZS: 51.77] -> 52.27% | [ZS: 49.04] -> 56.35% | [ZS: 52.23] -> 51.59%
+
+
+# ----- Task 2/5 | Data from 1 dataset(s).
+# Precomputing class/caption embeddings...: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 7/7 [00:01<00:00,  4.67it/s]
+# [Evaluating for Stability Gap Tests...]: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1024/1024 [01:55<00:00,  8.87it/s, Loss: 3.4914]
+# Precomputing class/caption embeddings...: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 7/7 [00:00<00:00,  8.99it/s]
+                                                                                                                                                                                                                        
+                                                                                                                                                                                                                      
+# Evaluation Current Task 2/5:
+# Covering 1 adaptation dataset(s).
+
+# Eurosat - Total Accuracy:
+# [ZS: 49.04%] -> 55.78%
+# Current Task Accuracy:
+# 90.17% | 69.52% | 45.70% | 42.67% | 25.88%
+# Avg. Task Accuracy Progression:
+# 67.33% -> 79.84%
+# Current Task Task_masked_accuracy:
+# 99.17% | 99.21% | 97.93% | 85.45% | 63.09%
+# Avg. Task Task_masked_accuracy Progression:
+# 99.61% -> 99.19%
+
+# Evaluation On All Datasets:
+# Average Accuracy across [all | train | eval_only] datasets:
+# [ZS: 51.77] -> 52.27% -> 51.70% | [ZS: 49.04] -> 56.35% -> 55.78% | [ZS: 52.23] -> 51.59% -> 51.02%
+
+# ----- Task 3/5 | Data from 1 dataset(s).
+# Precomputing class/caption embeddings...: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 7/7 [00:00<00:00,  9.41it/s]
+# [Evaluating for Stability Gap Tests...]: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1024/1024 [01:32<00:00, 11.05it/s, Loss: 3.2786]
+# Precomputing class/caption embeddings...: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 7/7 [00:00<00:00, 10.13it/s]
+                                                                                                                                                                                                                                                                                                                                                                                                                  
+# Evaluation Current Task 3/5:
+# Covering 1 adaptation dataset(s).
+
+# Eurosat - Total Accuracy:
+# [ZS: 49.04%] -> 58.46%
+# Current Task Accuracy:
+# 67.00% | 72.42% | 67.11% | 57.45% | 29.09%
+# Avg. Task Accuracy Progression:
+# 67.33% -> 79.84% -> 68.85%
+# Current Task Task_masked_accuracy:
+# 86.11% | 97.15% | 100.00% | 97.52% | 66.36%
+# Avg. Task Task_masked_accuracy Progression:
+# 99.61% -> 99.19% -> 94.42%
+
+# Evaluation On All Datasets:
+# Average Accuracy across [all | train | eval_only] datasets:
+# [ZS: 51.77] -> 52.27% -> 51.70% -> 51.35% | [ZS: 49.04] -> 56.35% -> 55.78% -> 58.46% | [ZS: 52.23] -> 51.59% -> 51.02% -> 50.16%
+
+# ----- Task 4/5 | Data from 1 dataset(s).
+# Precomputing class/caption embeddings...: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 7/7 [00:00<00:00,  8.73it/s]
+# [Evaluating for Stability Gap Tests...]: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1024/1024 [01:32<00:00, 11.03it/s, Loss: 3.5769]
+# Precomputing class/caption embeddings...: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 7/7 [00:00<00:00,  9.71it/s]
+                                                                                                                                                                                                                                                                                                                                                                                                                     
+# Evaluation Current Task 4/5:
+# Covering 1 adaptation dataset(s).
+
+# Eurosat - Total Accuracy:
+# [ZS: 49.04%] -> 59.84%
+# Current Task Accuracy:
+# 48.72% | 53.64% | 80.67% | 79.21% | 41.76%
+# Avg. Task Accuracy Progression:
+# 67.33% -> 79.84% -> 68.85% -> 65.56%
+# Current Task Task_masked_accuracy:
+# 87.61% | 97.82% | 95.78% | 99.58% | 76.42%
+# Avg. Task Task_masked_accuracy Progression:
+# 99.61% -> 99.19% -> 94.42% -> 95.20%
+
+# Evaluation On All Datasets:
+# Average Accuracy across [all | train | eval_only] datasets:
+# [ZS: 51.77] -> 50.83% [Best: 52.27%] | [ZS: 49.04] -> 59.84% [Best: 59.84%] | [ZS: 52.23] -> 49.33% [Best: 51.59%]
+
+# ----- Task 5/5 | Data from 1 dataset(s).
+# Precomputing class/caption embeddings...: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 7/7 [00:00<00:00,  9.10it/s]
+# [Evaluating for Stability Gap Tests...]: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1024/1024 [01:28<00:00, 11.57it/s, Loss: 3.5004]
+# Precomputing class/caption embeddings...: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 7/7 [00:00<00:00,  9.83it/s]
+                                                                                                                                                                                                                                                                                                                                                                                                               
+# Evaluation Current Task 5/5:
+# Covering 1 adaptation dataset(s).
+
+# Eurosat - Total Accuracy:
+# [ZS: 49.04%] -> 58.53%
+# Current Task Accuracy:
+# 25.44% | 51.64% | 53.41% | 77.21% | 87.03%
+# Avg. Task Accuracy Progression:
+# 67.33% -> 79.84% -> 68.85% -> 65.56% -> 58.95%
+# Current Task Task_masked_accuracy:
+# 99.28% | 97.21% | 99.48% | 99.09% | 96.61%
+# Avg. Task Task_masked_accuracy Progression:
+# 99.61% -> 99.19% -> 94.42% -> 95.20% -> 98.33%
+
+# Evaluation On All Datasets:
+# Average Accuracy across [all | train | eval_only] datasets:
+# [ZS: 51.77] -> 50.67% [Best: 52.27%] | [ZS: 49.04] -> 58TRAINING DATASETS
+# Dataset | accuracy | recall@1 | recall@5
+# eurosat | 49.037% | -------- | --------
+
+# EVAL ONLY DATASETS
+# Dataset | accuracy | recall@1 | recall@5
+# imagenet | 65.594% | -------- | --------
+# imagenet_a | 23.307% | -------- | --------
+# imagenet_d | 40.683% | -------- | --------
+# imagenet_r | 74.013% | -------- | --------
+# imagenet_s | 52.261% | -------- | --------
+# imagenet_v2 | 57.520% | -------- | --------
+
+# Beginning class-incremental data streaming.                                                                                                                                                                                      
+
+# Evaluation Current Task 1/5:
+# Covering 1 adaptation dataset(s).
+
+# Eurosat - Total Accuracy:
+# [ZS: 49.04%] -> 56.35%
+# Current Task Accuracy:
+# 67.33% | 40.18% | 73.78% | 84.97% | 17.64%
+# Avg. Task Accuracy Progression:
+# 67.33%
+# Current Task Task_masked_accuracy:
+# 99.61% | 92.18% | 99.41% | 95.45% | 72.79%
+# Avg. Task Task_masked_accuracy Progression:
+# 99.61%
+
+# Evaluation On All Datasets:
+# Average Accuracy across [all | train | eval_only] datasets:
+# [ZS: 51.77] -> 52.27% | [ZS: 49.04] -> 56.35% | [ZS: 52.23] -> 51.59%
+
+
+# ----- Task 2/5 | Data from 1 dataset(s).
+# Precomputing class/caption embeddings...: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 7/7 [00:01<00:00,  4.67it/s]
+# [Evaluating for Stability Gap Tests...]: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1024/1024 [01:55<00:00,  8.87it/s, Loss: 3.4914]
+# Precomputing class/caption embeddings...: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 7/7 [00:00<00:00,  8.99it/s]
+                                                                                                                                                                                                                        
+                                                                                                                                                                                                                      
+# Evaluation Current Task 2/5:
+# Covering 1 adaptation dataset(s).
+
+# Eurosat - Total Accuracy:
+# [ZS: 49.04%] -> 55.78%
+# Current Task Accuracy:
+# 90.17% | 69.52% | 45.70% | 42.67% | 25.88%
+# Avg. Task Accuracy Progression:
+# 67.33% -> 79.84%
+# Current Task Task_masked_accuracy:
+# 99.17% | 99.21% | 97.93% | 85.45% | 63.09%
+# Avg. Task Task_masked_accuracy Progression:
+# 99.61% -> 99.19%
+
+# Evaluation On All Datasets:
+# Average Accuracy across [all | train | eval_only] datasets:
+# [ZS: 51.77] -> 52.27% -> 51.70% | [ZS: 49.04] -> 56.35% -> 55.78% | [ZS: 52.23] -> 51.59% -> 51.02%
+
+# ----- Task 3/5 | Data from 1 dataset(s).
+# Precomputing class/caption embeddings...: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 7/7 [00:00<00:00,  9.41it/s]
+# [Evaluating for Stability Gap Tests...]: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1024/1024 [01:32<00:00, 11.05it/s, Loss: 3.2786]
+# Precomputing class/caption embeddings...: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 7/7 [00:00<00:00, 10.13it/s]
+                                                                                                                                                                                                                                                                                                                                                                                                                  
+# Evaluation Current Task 3/5:
+# Covering 1 adaptation dataset(s).
+
+# Eurosat - Total Accuracy:
+# [ZS: 49.04%] -> 58.46%
+# Current Task Accuracy:
+# 67.00% | 72.42% | 67.11% | 57.45% | 29.09%
+# Avg. Task Accuracy Progression:
+# 67.33% -> 79.84% -> 68.85%
+# Current Task Task_masked_accuracy:
+# 86.11% | 97.15% | 100.00% | 97.52% | 66.36%
+# Avg. Task Task_masked_accuracy Progression:
+# 99.61% -> 99.19% -> 94.42%
+
+# Evaluation On All Datasets:
+# Average Accuracy across [all | train | eval_only] datasets:
+# [ZS: 51.77] -> 52.27% -> 51.70% -> 51.35% | [ZS: 49.04] -> 56.35% -> 55.78% -> 58.46% | [ZS: 52.23] -> 51.59% -> 51.02% -> 50.16%
+
+# ----- Task 4/5 | Data from 1 dataset(s).
+# Precomputing class/caption embeddings...: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 7/7 [00:00<00:00,  8.73it/s]
+# [Evaluating for Stability Gap Tests...]: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1024/1024 [01:32<00:00, 11.03it/s, Loss: 3.5769]
+# Precomputing class/caption embeddings...: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 7/7 [00:00<00:00,  9.71it/s]
+                                                                                                                                                                                                                                                                                                                                                                                                                     
+# Evaluation Current Task 4/5:
+# Covering 1 adaptation dataset(s).
+
+# Eurosat - Total Accuracy:
+# [ZS: 49.04%] -> 59.84%
+# Current Task Accuracy:
+# 48.72% | 53.64% | 80.67% | 79.21% | 41.76%
+# Avg. Task Accuracy Progression:
+# 67.33% -> 79.84% -> 68.85% -> 65.56%
+# Current Task Task_masked_accuracy:
+# 87.61% | 97.82% | 95.78% | 99.58% | 76.42%
+# Avg. Task Task_masked_accuracy Progression:
+# 99.61% -> 99.19% -> 94.42% -> 95.20%
+
+# Evaluation On All Datasets:
+# Average Accuracy across [all | train | eval_only] datasets:
+# [ZS: 51.77] -> 50.83% [Best: 52.27%] | [ZS: 49.04] -> 59.84% [Best: 59.84%] | [ZS: 52.23] -> 49.33% [Best: 51.59%]
+
+# ----- Task 5/5 | Data from 1 dataset(s).
+# Precomputing class/caption embeddings...: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 7/7 [00:00<00:00,  9.10it/s]
+# [Evaluating for Stability Gap Tests...]: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1024/1024 [01:28<00:00, 11.57it/s, Loss: 3.5004]
+# Precomputing class/caption embeddings...: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 7/7 [00:00<00:00,  9.83it/s]
+                                                                                                                                                                                                                                                                                                                                                                                                               
+# Evaluation Current Task 5/5:
+# Covering 1 adaptation dataset(s).
+
+# Eurosat - Total Accuracy:
+# [ZS: 49.04%] -> 58.53%
+# Current Task Accuracy:
+# 25.44% | 51.64% | 53.41% | 77.21% | 87.03%
+# Avg. Task Accuracy Progression:
+# 67.33% -> 79.84% -> 68.85% -> 65.56% -> 58.95%
+# Current Task Task_masked_accuracy:
+# 99.28% | 97.21% | 99.48% | 99.09% | 96.61%
+# Avg. Task Task_masked_accuracy Progression:
+# 99.61% -> 99.19% -> 94.42% -> 95.20% -> 98.33%
+
+# Evaluation On All Datasets:
+# Average Accuracy across [all | train | eval_only] datasets:
+# [ZS: 51.77] -> 50.67% [Best: 52.27%] | [ZS: 49.04] -> 58.53% [Best: 59.84%] | [ZS: 52.23] -> 49.36% [Best: 51.59%]
+
+# Evaluating final zero-shot performance on full evaluation data.
+
+# TRAINING DATASETS
+# Dataset | accuracy | recall@1 | recall@5
+# eurosat | 58.531% | -------- | --------
+
+# EVAL ONLY DATASETS
+# Dataset | accuracy | recall@1 | recall@5
+# imagenet | 62.618% | -------- | --------
+# imagenet_a | 19.653% | -------- | --------
+# imagenet_d | 37.332% | -------- | --------
+# imagenet_r | 71.947% | -------- | --------
+# imagenet_s | 49.893% | -------- | --------
+# imagenet_v2 | 54.740% | -------- | --------.53% [Best: 59.84%] | [ZS: 52.23] -> 49.36% [Best: 51.59%]
+
+# Evaluating final zero-shot performance on full evaluation data.
+
+# TRAINING DATASETS
+# Dataset | accuracy | recall@1 | recall@5
+# eurosat | 58.531% | -------- | --------
+
+# EVAL ONLY DATASETS
+# Dataset | accuracy | recall@1 | recall@5
+# imagenet | 62.618% | -------- | --------
+# imagenet_a | 19.653% | -------- | --------
+# imagenet_d | 37.332% | -------- | --------
+# imagenet_r | 71.947% | -------- | --------
+# imagenet_s | 49.893% | -------- | --------
+# imagenet_v2 | 54.740% | -------- | --------
+
+# LORA:
+
+# python main.py   experiment=mini_eurosat.yaml  experiment.backbone.freeze_head=False experiment.backbone.freeze_features=False  experiment.backbone.name=openclip_vit_b32  log.folder=./experiment_results   log.name=mini_stl10_finetune zeroshot_only=False continual.method=lora continual.lora.rank=64
+
+# 5 TASKS, 1024 SAMPLES:
+
+# TRAINING DATASETS
+# Dataset | accuracy | recall@1 | recall@5
+# eurosat | 49.037% | -------- | --------
+
+# EVAL ONLY DATASETS
+# Dataset | accuracy | recall@1 | recall@5
+# imagenet | 65.594% | -------- | --------
+# imagenet_a | 23.307% | -------- | --------
+# imagenet_d | 40.683% | -------- | --------
+# imagenet_r | 74.013% | -------- | --------
+# imagenet_s | 52.261% | -------- | --------
+# imagenet_v2 | 57.520% | -------- | --------
+
+
+
+# [W&B logging] Zeroshot results are stored alongside adaptation results (first value).
+# Completed in 64.45s
+
+# Beginning class-incremental data streaming.
+
+# ----- Task 1/5 | Data from 1 dataset(s).
+# /home/petko/projects/fomo_in_flux/continual_lib/utils/base_continual_learner.py:308: FutureWarning: `torch.cuda.amp.GradScaler(args...)` is deprecated. Please use `torch.amp.GradScaler('cuda', args...)` instead.
+#   self.scaler = torch.cuda.amp.GradScaler()
+#  Epoch 1/1, LR = 5e-06 | 5e-06. Samples seen:   0%|                                                                                                                                            | 0/1024 [00:00<?, ?it/s]/home/petko/projects/fomo_in_flux/continual_lib/finetune.py:26: FutureWarning: `torch.cuda.amp.autocast(args...)` is deprecated. Please use `torch.amp.autocast('cuda', args...)` instead.
+#   with torch.cuda.amp.autocast():
+# /home/petko/projects/fomo_in_flux/env/lib/python3.12/site-packages/torch/optim/lr_scheduler.py:192: UserWarning: Detected call of `lr_scheduler.step()` before `optimizer.step()`. In PyTorch 1.1.0 and later, you should call them in the opposite order: `optimizer.step()` before `lr_scheduler.step()`.  Failure to do this will result in PyTorch skipping the first value of the learning rate schedule. See more details at https://pytorch.org/docs/stable/optim.html#how-to-adjust-learning-rate
+#   warnings.warn(
+# Precomputing class/caption embeddings...: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 7/7 [00:00<00:00,  9.87it/s]
+# [Evaluating for Stability Gap Tests...]: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1024/1024 [01:33<00:00, 10.98it/s, Loss: 3.5249]
+# Precomputing class/caption embeddings...: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 7/7 [00:00<00:00,  9.35it/s]
+                                                                                                                                                                                                                        
+                                                                                                                                                                                                                        
+
+# Evaluation Current Task 1/5:
+# Covering 1 adaptation dataset(s).
+
+# Eurosat - Total Accuracy:
+# [ZS: 49.04%] -> 56.35%
+# Current Task Accuracy:
+# 67.33% | 40.18% | 73.78% | 84.97% | 17.64%
+# Avg. Task Accuracy Progression:
+# 67.33%
+# Current Task Task_masked_accuracy:
+# 99.61% | 92.18% | 99.41% | 95.45% | 72.79%
+# Avg. Task Task_masked_accuracy Progression:
+# 99.61%
+
+
+
+# Evaluation On All Datasets:
+# Average Accuracy across [all | train | eval_only] datasets:
+# [ZS: 51.77] -> 52.27% | [ZS: 49.04] -> 56.35% | [ZS: 52.23] -> 51.59%
+
+
+# No results for Recall@1 across all datasets
+
+
+# No results for Recall@5 across all datasets
+
+
+# Finished evaluation in 102.57s.
+
+# Stored running checkpoint at experiment_results/default_project_default_group_s-0_fomoinflux_1_2025-10-15_15-46-13-640778/checkpoint.pth.tar.
+# Task completed in 196.5304s.
+
+
+# ----- Task 2/5 | Data from 1 dataset(s).
+# Precomputing class/caption embeddings...: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 7/7 [00:00<00:00,  9.78it/s]
+# [Evaluating for Stability Gap Tests...]: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1024/1024 [01:50<00:00,  9.26it/s, Loss: 3.4914]
+# Precomputing class/caption embeddings...: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 7/7 [00:00<00:00,  9.70it/s]
+                                                                                                                                                                                                                        
+                                                                                                                                                                                                                        
+
+# Evaluation Current Task 2/5:
+# Covering 1 adaptation dataset(s).
+
+# Eurosat - Total Accuracy:
+# [ZS: 49.04%] -> 55.78%
+# Current Task Accuracy:
+# 90.17% | 69.52% | 45.70% | 42.67% | 25.88%
+# Avg. Task Accuracy Progression:
+# 67.33% -> 79.84%
+# Current Task Task_masked_accuracy:
+# 99.17% | 99.21% | 97.93% | 85.45% | 63.09%
+# Avg. Task Task_masked_accuracy Progression:
+# 99.61% -> 99.19%
+
+
+
+# Evaluation On All Datasets:
+# Average Accuracy across [all | train | eval_only] datasets:
+# [ZS: 51.77] -> 52.27% -> 51.70% | [ZS: 49.04] -> 56.35% -> 55.78% | [ZS: 52.23] -> 51.59% -> 51.02%
+
+
+# No results for Recall@1 across all datasets
+
+
+# No results for Recall@5 across all datasets
+
+
+# Finished evaluation in 101.94s.
+
+# Stored running checkpoint at experiment_results/default_project_default_group_s-0_fomoinflux_1_2025-10-15_15-46-13-640778/checkpoint.pth.tar.
+# Task completed in 213.4031s.
+
+
+# ----- Task 3/5 | Data from 1 dataset(s).
+# Precomputing class/caption embeddings...: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 7/7 [00:00<00:00,  9.12it/s]
+# [Evaluating for Stability Gap Tests...]: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1024/1024 [01:37<00:00, 10.51it/s, Loss: 3.2786]
+# Precomputing class/caption embeddings...: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 7/7 [00:00<00:00, 10.30it/s]
+                                                                                                                                                                                                                        
+                                                                                                                                                                                                                        
+
+# Evaluation Current Task 3/5:
+# Covering 1 adaptation dataset(s).
+
+# Eurosat - Total Accuracy:
+# [ZS: 49.04%] -> 58.46%
+# Current Task Accuracy:
+# 67.00% | 72.42% | 67.11% | 57.45% | 29.09%
+# Avg. Task Accuracy Progression:
+# 67.33% -> 79.84% -> 68.85%
+# Current Task Task_masked_accuracy:
+# 86.11% | 97.15% | 100.00% | 97.52% | 66.36%
+# Avg. Task Task_masked_accuracy Progression:
+# 99.61% -> 99.19% -> 94.42%
+
+
+
+# Evaluation On All Datasets:
+# Average Accuracy across [all | train | eval_only] datasets:
+# [ZS: 51.77] -> 52.27% -> 51.70% -> 51.35% | [ZS: 49.04] -> 56.35% -> 55.78% -> 58.46% | [ZS: 52.23] -> 51.59% -> 51.02% -> 50.16%
+
+
+# No results for Recall@1 across all datasets
+
+
+# No results for Recall@5 across all datasets
+
+
+# Finished evaluation in 94.97s.
+
+# Stored running checkpoint at experiment_results/default_project_default_group_s-0_fomoinflux_1_2025-10-15_15-46-13-640778/checkpoint.pth.tar.
+# Task completed in 193.2590s.
+
+
+# ----- Task 4/5 | Data from 1 dataset(s).
+# Precomputing class/caption embeddings...: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 7/7 [00:00<00:00,  8.62it/s]
+# [Evaluating for Stability Gap Tests...]: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1024/1024 [01:38<00:00, 10.44it/s, Loss: 3.5769]
+# Precomputing class/caption embeddings...: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 7/7 [00:00<00:00,  9.64it/s]
+                                                                                                                                                                                                                        
+                                                                                                                                                                                                                        
+
+# Evaluation Current Task 4/5:
+# Covering 1 adaptation dataset(s).
+
+# Eurosat - Total Accuracy:
+# [ZS: 49.04%] -> 59.84%
+# Current Task Accuracy:
+# 48.72% | 53.64% | 80.67% | 79.21% | 41.76%
+# Avg. Task Accuracy Progression:
+# 67.33% -> 79.84% -> 68.85% -> 65.56%
+# Current Task Task_masked_accuracy:
+# 87.61% | 97.82% | 95.78% | 99.58% | 76.42%
+# Avg. Task Task_masked_accuracy Progression:
+# 99.61% -> 99.19% -> 94.42% -> 95.20%
+
+
+
+# Evaluation On All Datasets:
+# Average Accuracy across [all | train | eval_only] datasets:
+# [ZS: 51.77] -> 50.83% [Best: 52.27%] | [ZS: 49.04] -> 59.84% [Best: 59.84%] | [ZS: 52.23] -> 49.33% [Best: 51.59%]
+
+
+# No results for Recall@1 across all datasets
+
+
+# No results for Recall@5 across all datasets
+
+
+# Finished evaluation in 93.43s.
+
+# Stored running checkpoint at experiment_results/default_project_default_group_s-0_fomoinflux_1_2025-10-15_15-46-13-640778/checkpoint.pth.tar.
+# Task completed in 192.3415s.
+
+
+# ----- Task 5/5 | Data from 1 dataset(s).
+# Precomputing class/caption embeddings...: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 7/7 [00:00<00:00,  8.63it/s]
+# [Evaluating for Stability Gap Tests...]: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1024/1024 [01:37<00:00, 10.51it/s, Loss: 3.5004]
+# Precomputing class/caption embeddings...: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 7/7 [00:00<00:00, 10.03it/s]
+                                                                                                                                                                                                                        
+                                                                                                                                                                                                                        
+
+# Evaluation Current Task 5/5:
+# Covering 1 adaptation dataset(s).
+
+# Eurosat - Total Accuracy:
+# [ZS: 49.04%] -> 58.53%
+# Current Task Accuracy:
+# 25.44% | 51.64% | 53.41% | 77.21% | 87.03%
+# Avg. Task Accuracy Progression:
+# 67.33% -> 79.84% -> 68.85% -> 65.56% -> 58.95%
+# Current Task Task_masked_accuracy:
+# 99.28% | 97.21% | 99.48% | 99.09% | 96.61%
+# Avg. Task Task_masked_accuracy Progression:
+# 99.61% -> 99.19% -> 94.42% -> 95.20% -> 98.33%
+
+
+
+# Evaluation On All Datasets:
+# Average Accuracy across [all | train | eval_only] datasets:
+# [ZS: 51.77] -> 50.67% [Best: 52.27%] | [ZS: 49.04] -> 58.53% [Best: 59.84%] | [ZS: 52.23] -> 49.36% [Best: 51.59%]
+
+
+# No results for Recall@1 across all datasets
+
+
+# No results for Recall@5 across all datasets
+
+
+# Finished evaluation in 95.72s.
+
+# Stored running checkpoint at experiment_results/default_project_default_group_s-0_fomoinflux_1_2025-10-15_15-46-13-640778/checkpoint.pth.tar.
+# Task completed in 193.8508s.
+
+
+# Evaluating final zero-shot performance on full evaluation data.
+
+# Precomputing class/caption embeddings...: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 7/7 [00:00<00:00, 10.47it/s]
+                                                                                                                                                                                                                        
+                                                                                                                                                                                                                        
+# Finished evaluation in 92.75s.
+
+# TRAINING DATASETS
+# Dataset | accuracy | recall@1 | recall@5
+# eurosat | 58.531% | -------- | --------
+
+# EVAL ONLY DATASETS
+# Dataset | accuracy | recall@1 | recall@5
+# imagenet | 62.618% | -------- | --------
+# imagenet_a | 19.653% | -------- | --------
+# imagenet_d | 37.332% | -------- | --------
+# imagenet_r | 71.947% | -------- | --------
+# imagenet_s | 49.893% | -------- | --------
+# imagenet_v2 | 54.740% | -------- | --------
+
+# TASK-ARITHMETIC MODEL MERGING:
+
+# python main.py   experiment=mini_eurosat.yaml  experiment.backbone.freeze_head=False experiment.backbone.freeze_features=False  experiment.backbone.name=openclip_vit_b32  log.folder=./experiment_results   log.name=mini_stl10_finetune zeroshot_only=False continual.ema_paint.backbone_merge.method=task_arithmetic continual.ema_paint.head_merge.method=task_arithmetic continual.ema_paint.backbone_merge.apply_lines=False continual.ema_paint.head_merge.apply_lines=False continual.ema_paint.backbone_merge.lines_params=[0.5,0.5,True,'linear'] continual.ema_paint.head_merge.lines_params=[0.5,0.5,True,'linear']
+
+# FLOPS:
+
+# VTE:
+
+# 
+
+# FINETUNE:
+
+# python flops_computation.py   experiment=mini_eurosat.yaml   continual.method=finetune   experiment.backbone.name=openclip_vit_b32 experiment.backbone.freeze_head=False experiment.backbone.freeze_features=False experiment.task.batch_size=1   log.name=flops_eurosat_finetune
+
+zeroshot_only: True
+
+experiment:
+  type: 'class_incremental'
+  training: 'contrastive'
+
+  backbone:
+    name: openclip_vit_b32
+    cache_dir: './cache'
+    pretrained: True
+    # freeze flags are not strictly necessary as the learner handles it, but good practice
+    freeze_features: True
+    freeze_head: True
+    half_precision: True
+
+  dataset:
+    name: ['eurosat']
+    sequence: null
+    path: './data'
+    resize: 224
+    img_size: 224
+    create_resized_variant_if_possible: True
+
+  evaluation:
+    additional_datasets: [
+      'imagenet',
+      'imagenet_a',
+      'imagenet_d',
+      'imagenet_r',
+      'imagenet_s',
+      'imagenet_v2',
+    ]
+
+  task:
+    # Set to 1 task for a single dataset experiment
+    num: 5
+    n_samples: 1024 # Example value, adjust as needed
+    batch_size: 64
+    data_mixture:
+      pretraining: 0.0
+      update: 1.0
+      buffer: 0.0
+
+  optimizer:
+    name: 'adamw'
+    lr: 1e-5
+    scaled_learning_rate: False
+    loss: clip
+    label_smoothing: 0
+    weight_decay: 0.2
+    clip_grad_norm: 1
+    clip_temperature: 'learnable'
+
+  scheduler:
+    name: 'cosine_with_linear_warmup'
+    cosine_lr_mul: 0.001
+    warmup_perc: 0.1
