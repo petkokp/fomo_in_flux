@@ -714,8 +714,10 @@ continual:
     tpt_lr: 0.001     # Learning rate for the prompt optimizer
 
   vte:
-      selection_p: 0.1
-
+    selection_p: 0.1
+    
+  batclip:
+    selection_p: 0.1
   abn:
     alpha: 0.5  # The interpolation factor. 0.0=zero-shot, 1.0=test-time BN.
 
