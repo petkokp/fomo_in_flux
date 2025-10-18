@@ -243,6 +243,7 @@ def get_backbone(
             # loading for ViT-S model directly from checkpoint
             # first load randomly init ViT-S-16
             backbone, _, _ = open_clip.create_model_and_transforms(openclip_conv[backbone_name][0])
+            
             # second load the torch checkpoint
             ckpt = torch.load(os.path.join(cache_dir, openclip_conv[backbone_name][1]))
             model_ckpt = {k.replace('module.', ''):v for k,v in dict(ckpt['state_dict']).items()}
@@ -255,6 +256,48 @@ def get_backbone(
                 pretrained=openclip_conv[backbone_name][1],
                 cache_dir=cache_dir,
             )
+            # NEW CODE
+            print("loading clip...")
+            
+            from open_clip.model import text_global_pool
+            
+            _original_encode_text = backbone.encode_text
+            
+            def new_encode_text(text_tokens, normalize: bool = False, prompts=None):
+                # --- THIS IS THE CRITICAL FIX ---
+                # If no prompts are given, use the original, unmodified method.
+                # This ensures zero-shot and other CL methods work correctly.
+                if prompts is None:
+                    return _original_encode_text(text_tokens, normalize=normalize)
+
+                # If prompts ARE given, proceed with our custom logic.
+                cast_dtype = backbone.transformer.get_cast_dtype()
+                
+                token_embeds = backbone.token_embedding(text_tokens).to(cast_dtype)
+                prompt_len = prompts.shape[0]
+                prompt_embeds = prompts.expand(token_embeds.shape[0], -1, -1).to(cast_dtype)
+
+                num_text_tokens_to_keep = 77 - 1 - prompt_len
+
+                token_embeds = torch.cat([
+                    token_embeds[:, :1, :],
+                    prompt_embeds,
+                    token_embeds[:, 1:1 + num_text_tokens_to_keep, :]
+                ], dim=1)
+
+                x = token_embeds + backbone.positional_embedding.to(cast_dtype)
+                x = backbone.transformer(x, attn_mask=backbone.attn_mask)
+                x = backbone.ln_final(x)
+                
+                x = text_global_pool(x, text_tokens, backbone.text_pool_type, eos_token_id=getattr(backbone, "text_eos_id", None))
+                
+                if backbone.text_projection is not None:
+                    x = x @ backbone.text_projection
+                
+                return torch.nn.functional.normalize(x, dim=-1) if normalize else x
+                    
+            backbone.encode_text = new_encode_text
+            # END NEW CODE
         backbone.mean, backbone.std = CLIP_MEAN, CLIP_STD
         _ = backbone.to(device)
 
@@ -469,12 +512,14 @@ class SemanticHead(torch.nn.Module):
         return {"logits": logits}
 
 
+# In backbones/__init__.py
+
 class ClipTextHead(torch.nn.Module):
     """
-    This provides the standard language side of CLIP, which takes in at least corresponding text lists and returns respective text embeddings.
-    If image features are provided, it also jointly computes the corresponding logits / similarities.
+    This provides the standard language side of CLIP. This version is architected
+    to be compatible with a prompt-tuning learner that may attach a 'prompts'
+    parameter to this module.
     """
-
     def __init__(
         self,
         device: torch.device,
@@ -493,15 +538,18 @@ class ClipTextHead(torch.nn.Module):
         self.text_encoder = text_encoder.cuda()
 
     def get_params(self) -> torch.Tensor:
+        # This method remains unchanged
         params = []
         for pp in list(self.parameters()):
             params.append(pp.view(-1))
         return torch.cat(params)
 
     def get_grads(self) -> torch.Tensor:
+        # This method remains unchanged
         return torch.cat(self.get_grads_list())
 
     def get_grads_list(self):
+        # This method remains unchanged
         grads = []
         for pp in list(self.parameters()):
             if pp.grad is not None:
@@ -510,31 +558,50 @@ class ClipTextHead(torch.nn.Module):
                 grads.append(torch.zeros_like(pp).view(-1))
         return grads
 
+    # --- START OF THE DEFINITIVE FIX ---
+
     def embed_text(self, texts, batch_size):
+        """
+        Used for EVALUATION. This method now checks if prompts have been attached
+        to it by the continual learner and passes them to the encoder.
+        """
         embed_coll = []
-
-        # Compute classname embeddings
         text_tokens = self.tokenizer(texts).cuda()
-
         num_batches = int(np.ceil(len(text_tokens) / batch_size))
+        
+        # Check if the 'prompts' parameter was attached by our prompt learner.
+        prompts = getattr(self, 'prompts', None)
+
         for i in range(num_batches):
-            embed_coll.append(
-                torch.nn.functional.normalize(
-                    self.text_encoder.encode_text(
-                        text_tokens[i * batch_size : (i + 1) * batch_size]
-                    ),
-                    dim=-1,
-                )
-            )
+            batch_tokens = text_tokens[i * batch_size : (i + 1) * batch_size]
+            
+            # Pass prompts to the (monkey-patched) encode_text method.
+            text_features = self.text_encoder.encode_text(batch_tokens, prompts=prompts)
+            
+            embed_coll.append(torch.nn.functional.normalize(text_features, dim=-1))
+            
         return torch.cat(embed_coll, dim=0)
 
     def forward(self, texts, features: torch.Tensor = None, **kwargs):
+        """
+        Used for TRAINING. This method correctly extracts prompts from kwargs
+        and passes them to the encoder.
+        """
         text_tokens = self.tokenizer(texts).cuda()
 
+        # Isolate the 'prompts' kwarg to pass to the encoder.
+        pass_through_kwargs = {}
+        if 'prompts' in kwargs:
+            pass_through_kwargs['prompts'] = kwargs['prompts']
+        
         text_features = torch.nn.functional.normalize(
-            self.text_encoder.encode_text(text_tokens), dim=-1
+            self.text_encoder.encode_text(text_tokens, **pass_through_kwargs), dim=-1
         )
+        
         logits = None
         if features is not None:
             logits = torch.nn.functional.normalize(features, dim=-1) @ text_features.T
+            
         return {"text_features": text_features, "logits": logits}
+        
+    # --- END OF THE DEFINITIVE FIX ---
