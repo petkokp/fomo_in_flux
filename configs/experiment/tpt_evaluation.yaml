@@ -1,0 +1,49 @@
+# @package _global_
+
+# TPT is an evaluation method, so we can run it in zeroshot_only mode,
+# which skips the (empty) training phase.
+zeroshot_only: True
+
+experiment:
+  backbone:
+    name: openclip_vit_b32
+    cache_dir: './cache'
+    pretrained: True
+    # The backbone and head are frozen by the TPT learner itself
+    freeze_features: True 
+    freeze_head: True
+    half_precision: True
+
+  dataset:
+    name: ['eurosat']
+    sequence: null
+    path: './data'
+    resize: 224
+    img_size: 224
+    create_resized_variant_if_possible: True
+
+  task:
+    # Set to 1 task for a single dataset experiment
+    num: 1
+    n_samples: 1000 # Example value, adjust as needed
+    batch_size: 256
+    data_mixture:
+      pretraining: 0.0
+      update: 1.0
+      buffer: 0.0
+
+  evaluation:
+    additional_datasets: [
+      'imagenet_r'
+    ]
+
+log:
+  group: tpt_experiments
+  project: continualfomo_tpt
+
+continual:
+  method: tpt
+  # You can override TPT parameters here
+  tpt:
+    steps: 1
+    tpt_lr: 0.00025
