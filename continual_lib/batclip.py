@@ -1,4 +1,3 @@
-# batclip.py
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -27,12 +26,12 @@ class Model(BaseContinualLearner):
         
         # Set up LayerNorm parameters to optimize
         self._set_optim_params()
-        
         # Initialize optimizer for test-time adaptation
         self._init_optimizer()
         
         # Initialize mixed precision scaler
         self.scaler = torch.cuda.amp.GradScaler()
+        
     
     def _set_optim_params(self):
         """Only optimize LayerNorm parameters (~0.044% of total params)."""
@@ -145,18 +144,8 @@ class Model(BaseContinualLearner):
         """
         Forward pass with test-time adaptation.
         
-        If image_features_only=True, skip adaptation and just return features.
+        Performs adaptation even during evaluation (test-time adaptation).
         """
-        image_features_only = kwargs.get('image_features_only', False)
-        
-        # If only features are requested (e.g., for evaluation metrics),
-        # skip adaptation and just return features
-        if image_features_only:
-            with torch.no_grad():
-                self.backbone.eval()
-                image_features = self.backbone(images)
-                return F.normalize(image_features, dim=-1)
-        
         texts = kwargs.get('texts')
         experiment = kwargs.get('experiment')
         batch_size = images.shape[0]
@@ -166,57 +155,60 @@ class Model(BaseContinualLearner):
         self._maybe_build_text_features(texts, batch_size)
         text_features = self.text_features
         
-        # Set model to train mode for LayerNorm adaptation
-        # (only LayerNorm params have requires_grad=True)
-        self.backbone.train()
-        if hasattr(self.head, 'module') and hasattr(self.head.module, 'text_encoder'):
-            self.head.module.text_encoder.train()
-        
-        # Zero gradients
-        self.optimizer.zero_grad()
-        
-        with torch.cuda.amp.autocast():
-            # Forward pass through vision encoder
-            image_features = self.backbone(images)
-            image_features = F.normalize(image_features, dim=-1)
+        # CRITICAL: Enable gradients even if called within torch.no_grad() during evaluation
+        # This is necessary for test-time adaptation
+        with torch.enable_grad():
+            # Set model to train mode for LayerNorm adaptation
+            # (only LayerNorm params have requires_grad=True)
+            self.backbone.train()
+            if hasattr(self.head, 'module') and hasattr(self.head.module, 'text_encoder'):
+                self.head.module.text_encoder.train()
             
-            # Compute logits
-            logit_scale = getattr(self.head.module.text_encoder, "logit_scale", 1.0)
-            if hasattr(logit_scale, 'exp'):
-                logit_scale = logit_scale.exp()
+            # Zero gradients
+            self.optimizer.zero_grad()
             
-            logits = logit_scale * (image_features @ text_features.T)
+            with torch.cuda.amp.autocast():
+                # Forward pass through vision encoder
+                image_features = self.backbone(images)
+                image_features = F.normalize(image_features, dim=-1)
+                
+                # Compute logits
+                logit_scale = getattr(self.head.module.text_encoder, "logit_scale", 1.0)
+                if hasattr(logit_scale, 'exp'):
+                    logit_scale = logit_scale.exp()
+                
+                logits = logit_scale * (image_features @ text_features.T)
+                
+                # Get pseudo-labels
+                pseudo_labels = logits.detach().argmax(dim=-1)
+                
+                # Compute class prototypes
+                prototypes = self.compute_class_prototypes(
+                    image_features, pseudo_labels, num_classes
+                )
+                
+                # Three loss components (all vectorized)
+                loss_ent = -(F.softmax(logits, dim=-1) * F.log_softmax(logits, dim=-1)).sum(dim=-1).mean()
+                loss_pm = self.projection_matching_loss(prototypes, text_features)
+                loss_sp = self.separability_loss(prototypes)
+                
+                # Total loss: Lent - Lpm - Lsp (equation 6 from paper)
+                loss = loss_ent + loss_pm + loss_sp
             
-            # Get pseudo-labels
-            pseudo_labels = logits.detach().argmax(dim=-1)
+            # Backward pass with gradient scaling
+            self.scaler.scale(loss).backward()
             
-            # Compute class prototypes
-            prototypes = self.compute_class_prototypes(
-                image_features, pseudo_labels, num_classes
-            )
+            # Optional: Gradient clipping
+            if self.args.experiment.optimizer.clip_grad_norm > 0:
+                self.scaler.unscale_(self.optimizer)
+                torch.nn.utils.clip_grad_norm_(
+                    [p for group in self.to_optimize for p in group['params']],
+                    self.args.experiment.optimizer.clip_grad_norm
+                )
             
-            # Three loss components (all vectorized)
-            loss_ent = -(F.softmax(logits, dim=-1) * F.log_softmax(logits, dim=-1)).sum(dim=-1).mean()
-            loss_pm = self.projection_matching_loss(prototypes, text_features)
-            loss_sp = self.separability_loss(prototypes)
-            
-            # Total loss: Lent - Lpm - Lsp (equation 6 from paper)
-            loss = loss_ent + loss_pm + loss_sp
-        
-        # Backward pass with gradient scaling
-        self.scaler.scale(loss).backward()
-        
-        # Optional: Gradient clipping
-        if self.args.experiment.optimizer.clip_grad_norm > 0:
-            self.scaler.unscale_(self.optimizer)
-            torch.nn.utils.clip_grad_norm_(
-                [p for group in self.to_optimize for p in group['params']],
-                self.args.experiment.optimizer.clip_grad_norm
-            )
-        
-        # Optimizer step
-        self.scaler.step(self.optimizer)
-        self.scaler.update()
+            # Optimizer step
+            self.scaler.step(self.optimizer)
+            self.scaler.update()
         
         # Set back to eval mode for consistent behavior
         self.backbone.eval()
@@ -225,16 +217,24 @@ class Model(BaseContinualLearner):
         
         # Return predictions (after adaptation)
         with torch.no_grad():
-            # Recompute features and logits after adaptation
             image_features_updated = self.backbone(images)
             image_features_updated = F.normalize(image_features_updated, dim=-1)
-            return image_features_updated
-            logits_updated = logit_scale * (image_features_updated @ text_features.T)
-        
-        return {
-            'features': image_features_updated,
-            'logits': logits_updated
-        }
+            
+            # Compute logits for evaluation
+            logit_scale = getattr(self.head.module.text_encoder, "logit_scale", 1.0)
+            if hasattr(logit_scale, 'exp'):
+                logit_scale = logit_scale.exp()
+            
+            logits = logit_scale * (image_features_updated @ text_features.T)
+            
+            if kwargs.get('image_features_only', False):
+                return image_features_updated
+            
+            return {
+                "features": image_features_updated,
+                "logits": logits
+            }
+
     
     def observe(self, images, targets, **kwargs):
         """

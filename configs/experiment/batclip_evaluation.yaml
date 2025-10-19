@@ -18,7 +18,7 @@ experiment:
     half_precision: True
 
   dataset:
-    name: ['eurosat']
+    name: ['cifar10']
     sequence: null
     preload: False
     preload_test_only: False
@@ -41,11 +41,21 @@ experiment:
     # Set to 1 task for a single dataset experiment
     num: 1
     n_samples: 1000 # Example value, adjust as needed
-    batch_size: 64
+    batch_size: 256
     data_mixture:
       pretraining: 0.0
       update: 1.0
       buffer: 0.0
+    
+  optimizer:
+    name: 'adamw'
+    lr: 1e-3
+    scaled_learning_rate: False
+    loss: clip
+    label_smoothing: 0
+    weight_decay: 0.2
+    clip_grad_norm: 1
+    clip_temperature: 'learnable'
 
 log:
   group: batclip_experiments
