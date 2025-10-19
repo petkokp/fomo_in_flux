@@ -4,7 +4,7 @@
 
 # VTE:
 
-# python main.py   experiment=mini_eurosat.yaml   continual.method=vte   experiment.task.n_samples=0   experiment.backbone.name=openclip_vit_b32  log.folder=./experiment_results   log.name=mini_stl10_vte
+# python main.py   experiment=mini_eurosat.yaml   continual.method=vte   experiment.task.n_samples=0   experiment.backbone.name=openclip_vit_b32  log.folder=./experiment_results   log.name=vte_1task_1024samples
 
 # TRAINING DATASETS
 # Dataset | accuracy | recall@1 | recall@5
@@ -16,7 +16,7 @@
 
 # FINETUNE:
 
-# python main.py   experiment=mini_eurosat.yaml   continual.method=finetune experiment.backbone.freeze_head=False experiment.backbone.freeze_features=False  experiment.backbone.name=openclip_vit_b32  log.folder=./experiment_results   log.name=mini_stl10_finetune zeroshot_only=False
+# python main.py   experiment=mini_eurosat.yaml   continual.method=finetune experiment.backbone.freeze_head=False experiment.backbone.freeze_features=False  experiment.backbone.name=openclip_vit_b32  log.folder=./experiment_results   log.name=finetune_2tasks_1024samples zeroshot_only=False
 
 # 1 TASK, 150K SAMPLES:
 
@@ -318,7 +318,7 @@
 
 # LORA:
 
-# python main.py   experiment=mini_eurosat.yaml  experiment.backbone.freeze_head=False experiment.backbone.freeze_features=False  experiment.backbone.name=openclip_vit_b32  log.folder=./experiment_results   log.name=mini_stl10_finetune zeroshot_only=False continual.method=lora continual.lora.rank=64
+# python main.py   experiment=mini_eurosat.yaml  experiment.backbone.freeze_head=False experiment.backbone.freeze_features=False  experiment.backbone.name=openclip_vit_b32  log.folder=./experiment_results   log.name=lora_1task_1024samples zeroshot_only=False continual.method=lora continual.lora.rank=64
 
 # 5 TASKS, 1024 SAMPLES:
 
@@ -570,7 +570,7 @@
 
 # TASK-ARITHMETIC MODEL MERGING:
 
-# python main.py   experiment=mini_eurosat.yaml  experiment.backbone.freeze_head=False experiment.backbone.freeze_features=False  experiment.backbone.name=openclip_vit_b32  log.folder=./experiment_results   log.name=mini_stl10_finetune zeroshot_only=False continual.ema_paint.backbone_merge.method=task_arithmetic continual.ema_paint.head_merge.method=task_arithmetic continual.ema_paint.backbone_merge.apply_lines=False continual.ema_paint.head_merge.apply_lines=False continual.ema_paint.backbone_merge.lines_params=[0.5,0.5,True,'linear'] continual.ema_paint.head_merge.lines_params=[0.5,0.5,True,'linear']
+# python main.py   experiment=mini_eurosat.yaml  experiment.backbone.freeze_head=False experiment.backbone.freeze_features=False  experiment.backbone.name=openclip_vit_b32  log.folder=./experiment_results   log.name=model_merging_1task_1024samples zeroshot_only=False continual.ema_paint.backbone_merge.method=task_arithmetic continual.ema_paint.head_merge.method=task_arithmetic continual.ema_paint.backbone_merge.apply_lines=False continual.ema_paint.head_merge.apply_lines=False continual.ema_paint.backbone_merge.lines_params=[0.5,0.5,True,'linear'] continual.ema_paint.head_merge.lines_params=[0.5,0.5,True,'linear']
 
 # FLOPS:
 
@@ -598,8 +598,8 @@ experiment:
     half_precision: True
 
   dataset:
-    name: ['eurosat']
-    sequence: null
+    #name: ['eurosat']
+    sequence: 'stream_construction/random_sequence_1_short.json'
     path: './data'
     resize: 224
     img_size: 224
@@ -617,9 +617,9 @@ experiment:
 
   task:
     # Set to 1 task for a single dataset experiment
-    num: 5
+    num: 2
     n_samples: 1024 # Example value, adjust as needed
-    batch_size: 64
+    batch_size: 128
     data_mixture:
       pretraining: 0.0
       update: 1.0
