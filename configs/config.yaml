@@ -727,11 +727,4 @@ continual:
     momentum_probs: 0.9       # EMA momentum for tracking class probabilities
     temperature: 0.333          # Temperature for sample weighting
 
-  tda:
-    pos_alpha: 1.0
-    pos_beta: 5.0
-    pos_capacity: 1
-    neg_alpha: 1.0
-    neg_beta: 5.0
-    neg_capacity: 1
-    neg_entropy_thresh: [0.5, 1.0] # Range of normalized entropy for negative samples
+  tda: {}
