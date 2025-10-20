@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import torchvision.transforms.v2 as v2
 import torchvision.transforms.v2.functional as Fv2
 from continual_lib.utils.base_continual_learner import BaseContinualLearner
@@ -48,45 +49,86 @@ class Model(BaseContinualLearner):
             # cache but DON'T use it for view ranking
             self.logit_scale = self.head.module.text_encoder.logit_scale.exp().to(device)
 
-    # ---------- GPU/Tensor augmentation (no pre-resize, no clamp) ----------
+    # ---------- GPU/Tensor augmentation - OPTIMIZED PARALLEL VERSION ----------
     @torch.no_grad()
     def _augment_views_gpu_tensor(self, images: torch.Tensor) -> torch.Tensor:
         """
         Input `images`: [B,C,H,W], normalized with self.mean/std.
         Returns [B*(1+num_augs), C, 224, 224], normalized.
+        Fully parallelized on GPU - no Python loops over batch or augmentations.
         """
         device = images.device
         B, C, H, W = images.shape
 
-        # De-normalize to linear space in [possibly <0, >1]; no clamp
+        # De-normalize to linear space
         imgs_denorm = images * self.std.view(1, -1, 1, 1) + self.mean.view(1, -1, 1, 1)
 
-        # Create an 'original' 224 view via center-crop-from-resize (to match zeroshot)
-        # If already 224, this is a no-op except re-normalization.
+        # Create an 'original' 224 view via center-crop-from-resize
         orig_224 = Fv2.resize(imgs_denorm, size=[256, 256], antialias=True)
         orig_224 = Fv2.center_crop(orig_224, output_size=[224, 224])
         orig_224 = (orig_224 - self.mean.view(1, -1, 1, 1)) / self.std.view(1, -1, 1, 1)
 
-        views = [orig_224]  # [B,C,224,224]
+        if self.num_augs == 0:
+            return orig_224
 
-        # Prepare an RRC param sampler (we'll apply per-image)
-        rrc = v2.RandomResizedCrop(size=(224, 224), scale=self.crop_scale, ratio=self.crop_ratio, antialias=True)
-
-        for _ in range(self.num_augs):
-            crops = []
-            for i in range(B):
-                # Sample params on the ORIGINAL image (no pre-resize)
-                i0, j0, h0, w0 = rrc.get_params(imgs_denorm[i], scale=self.crop_scale, ratio=self.crop_ratio)
-                ci = Fv2.resized_crop(imgs_denorm[i], i0, j0, h0, w0, size=[224, 224], antialias=True)
-                # Random horizontal flip
-                if torch.rand((), device=device) < 0.5:
-                    ci = Fv2.horizontal_flip(ci)
-                crops.append(ci.unsqueeze(0))
-            crops = torch.cat(crops, dim=0)  # [B,C,224,224]
-            crops = (crops - self.mean.view(1, -1, 1, 1)) / self.std.view(1, -1, 1, 1)
-            views.append(crops)
-
-        all_views = torch.cat(views, dim=0).to(device, non_blocking=True)  # [B*(1+num_augs), C, 224, 224]
+        # Repeat images for all augmentations: [B*num_augs, C, H, W]
+        imgs_repeated = imgs_denorm.unsqueeze(1).repeat(1, self.num_augs, 1, 1, 1).view(B * self.num_augs, C, H, W)
+        
+        # Sample all RRC parameters in parallel
+        N = B * self.num_augs
+        scale_min, scale_max = self.crop_scale
+        ratio_min, ratio_max = self.crop_ratio
+        
+        # Sample random scales and aspect ratios
+        scales = torch.empty(N, device=device).uniform_(scale_min, scale_max)
+        log_ratio = torch.empty(N, device=device).uniform_(
+            torch.log(torch.tensor(ratio_min)), 
+            torch.log(torch.tensor(ratio_max))
+        )
+        ratios = torch.exp(log_ratio)
+        
+        # Compute crop dimensions
+        areas = H * W * scales
+        crop_h = torch.sqrt(areas / ratios).clamp(1, H).long()
+        crop_w = torch.sqrt(areas * ratios).clamp(1, W).long()
+        
+        # Sample random crop positions
+        i = (torch.rand(N, device=device) * (H - crop_h + 1).float()).long()
+        j = (torch.rand(N, device=device) * (W - crop_w + 1).float()).long()
+        
+        # Create normalized grid coordinates for grid_sample - FULLY VECTORIZED
+        # Calculate affine transformation matrices for all crops in parallel
+        # Normalized coordinates in [-1, 1]
+        y_start = 2 * i.float() / (H - 1) - 1
+        y_end = 2 * (i + crop_h - 1).float() / (H - 1) - 1
+        x_start = 2 * j.float() / (W - 1) - 1
+        x_end = 2 * (j + crop_w - 1).float() / (W - 1) - 1
+        
+        # Build theta matrices in parallel [N, 2, 3]
+        theta = torch.zeros(N, 2, 3, device=device)
+        theta[:, 0, 0] = (x_end - x_start) / 2
+        theta[:, 0, 2] = (x_end + x_start) / 2
+        theta[:, 1, 1] = (y_end - y_start) / 2
+        theta[:, 1, 2] = (y_end + y_start) / 2
+        
+        # Generate sampling grid and extract crops
+        grid = F.affine_grid(theta, [N, C, 224, 224], align_corners=True)
+        crops = F.grid_sample(imgs_repeated, grid, mode='bilinear', 
+                             padding_mode='border', align_corners=True)
+        
+        # Apply horizontal flips in parallel
+        flip_mask = torch.rand(N, device=device) < 0.5
+        crops = torch.where(
+            flip_mask.view(-1, 1, 1, 1),
+            torch.flip(crops, dims=[3]),  # flip width dimension
+            crops
+        )
+        
+        # Normalize all crops at once
+        crops = (crops - self.mean.view(1, -1, 1, 1)) / self.std.view(1, -1, 1, 1)
+        
+        # Combine original and augmented views: [B*(1+num_augs), C, 224, 224]
+        all_views = torch.cat([orig_224, crops], dim=0)
         return all_views
 
     # ---------- text cache ----------
@@ -115,7 +157,7 @@ class Model(BaseContinualLearner):
         B = images.shape[0]
         V = 1 + self.num_augs
 
-        # 1) Build views
+        # 1) Build views (fully parallelized)
         all_aug_images = self._augment_views_gpu_tensor(images)   # [B*V,C,224,224]
 
         # 2) Encode (micro-batch if needed)
@@ -131,7 +173,6 @@ class Model(BaseContinualLearner):
         img_features = img_features / (img_features.norm(dim=-1, keepdim=True) + 1e-12)
 
         # 3) View selection — rank by entropy of *unscaled* cosine logits
-        #    (more stable than applying logit_scale for ranking)
         cosine_logits = img_features @ text_features.T            # [B*V,K]
         logits = cosine_logits.view(B, V, -1)
         view_entropy = entropy_from_logits(logits)                 # [B,V]
