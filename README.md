@@ -1555,20 +1555,20 @@ log.checkpoint=False
 ## Waterfall:
 
 ### VTE:
-![](compact_report/waterfall_vte.png)
+![](report/waterfall_vte.png)
 
 ### TDA:
-![](compact_report/waterfall_tda.png)
+![](report/waterfall_tda.png)
 
 ### Finetune:
-![](compact_report/waterfall_finetune.png)
+![](report/waterfall_finetune.png)
 
 ### EMA:
-![](compact_report/waterfall_ema.png)
+![](report/waterfall_ema.png)
 
 ## Cleveland dot plot:
 
-![](compact_report/cleveland_delta_by_dataset.png)
+![](report/cleveland_delta_by_dataset.png)
 
 # Reproduce results:
 
