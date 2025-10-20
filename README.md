@@ -1609,3 +1609,15 @@ python main.py   experiment=training_vs_tta.yaml   continual.method=tda   experi
 ```
 python main.py ... experiment.task.num=X experiment.task.n_samples=Y ...
 ```
+
+The `overall_accuracy_results.csv` and `per_dataset_results.csv` files contain all of the results extracted from Wandb. They can be recreated using:
+
+```
+python collect_results.py --entity WANDB_ENTITY --project WANDB_PROJECT
+```
+
+The plots and the tables from the report can be reproduced using:
+
+```
+python create_report.py --perds per_dataset_results.csv --out_dir report
+```
