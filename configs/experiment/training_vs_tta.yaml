@@ -1,0 +1,61 @@
+# @package _global_
+zeroshot_only: True
+
+experiment:
+  type: 'class_incremental'
+  training: 'contrastive'
+
+  backbone:
+    name: openclip_vit_b32
+    cache_dir: './cache'
+    pretrained: True
+    # freeze flags are not strictly necessary as the learner handles it, but good practice
+    freeze_features: True
+    freeze_head: True
+    half_precision: True
+
+  dataset:
+    #name: ['eurosat']
+    sequence: 'stream_construction/random_sequence_1_short.json'
+    path: './data'
+    resize: 224
+    img_size: 224
+    create_resized_variant_if_possible: True
+    preload: False
+    # If set, will only preload test/evaluation data. Will override preload.
+    preload_test_only: False
+
+  evaluation:
+    additional_datasets: [
+      'imagenet',
+      'imagenet_a',
+      'imagenet_d',
+      'imagenet_r',
+      'imagenet_s',
+      'imagenet_v2',
+    ]
+
+  task:
+    # Set to 1 task for a single dataset experiment
+    num: 2
+    n_samples: 1024 # Example value, adjust as needed
+    batch_size: 64
+    data_mixture:
+      pretraining: 0.0
+      update: 1.0
+      buffer: 0.0
+
+  optimizer:
+    name: 'adamw'
+    lr: 1e-5
+    scaled_learning_rate: False
+    loss: clip
+    label_smoothing: 0
+    weight_decay: 0.2
+    clip_grad_norm: 1
+    clip_temperature: 'learnable'
+
+  scheduler:
+    name: 'cosine_with_linear_warmup'
+    cosine_lr_mul: 0.001
+    warmup_perc: 0.1

@@ -87,6 +87,12 @@ If you found this repository useful for your research, please consider citing it
     - [Finetune:](#finetune)
     - [EMA:](#ema)
   - [Cleveland dot plot:](#cleveland-dot-plot)
+- [Reproduce results:](#reproduce-results)
+    - [FINETUNE:](#finetune-1)
+    - [EMA MODEL MERGING:](#ema-model-merging)
+    - [VTE:](#vte-1)
+    - [TDA:](#tda-1)
+  - [NOTE: Each script has to be run with the different number of tasks and samples. They can be specified using:](#note-each-script-has-to-be-run-with-the-different-number-of-tasks-and-samples-they-can-be-specified-using)
   
 -----------------------------
 
@@ -1563,3 +1569,43 @@ log.checkpoint=False
 ## Cleveland dot plot:
 
 ![](compact_report/cleveland_delta_by_dataset.png)
+
+# Reproduce results:
+
+After the FiF codebase is setup (packages are installed and datasets are downloaded), the results from the report can be reproduced.
+
+Login to Wandb to log the results from the experiments:
+
+```
+wandb login
+```
+
+### FINETUNE:
+
+```
+python main.py   experiment=training_vs_tta.yaml   continual.method=finetune experiment.backbone.freeze_head=False experiment.backbone.freeze_features=False  experiment.backbone.name=openclip_vit_b32  log.folder=./experiment_results   log.name=finetune_2tasks_1024samples zeroshot_only=False
+```
+
+### EMA MODEL MERGING:
+
+```
+python main.py   experiment=training_vs_tta.yaml  experiment.backbone.freeze_head=False experiment.backbone.freeze_features=False  experiment.backbone.name=openclip_vit_b32  log.folder=./experiment_results   log.name=model_merging_1task_1024samples zeroshot_only=False continual.ema_paint.backbone_merge.method=task_arithmetic continual.ema_paint.head_merge.method=task_arithmetic continual.ema_paint.backbone_merge.apply_lines=False continual.ema_paint.head_merge.apply_lines=False continual.ema_paint.backbone_merge.lines_params=[0.5,0.5,True,'linear'] continual.ema_paint.head_merge.lines_params=[0.5,0.5,True,'linear']
+```
+
+### VTE:
+
+```
+python main.py   experiment=training_vs_tta.yaml   continual.method=vte   experiment.task.n_samples=0   experiment.backbone.name=openclip_vit_b32  log.folder=./experiment_results   log.name=vte_zeroshot
+```
+
+### TDA:
+
+```
+python main.py   experiment=training_vs_tta.yaml   continual.method=tda   experiment.task.n_samples=0   experiment.backbone.name=openclip_vit_b32  log.folder=./experiment_results   log.name=tda_zeroshot
+```
+
+## NOTE: Each script has to be run with the different number of tasks and samples. They can be specified using:
+
+```
+python main.py ... experiment.task.num=X experiment.task.n_samples=Y ...
+```
